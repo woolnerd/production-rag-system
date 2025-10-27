@@ -34,6 +34,7 @@ jobs:
       - name: Check for issue reference
         run: |
           BODY="${{ github.event.pull_request.body }}"
+          shopt -s nocasematch
           if [[ "$BODY" =~ (closes|fixes|resolves)[[:space:]]+#[0-9]+ ]]; then
             echo "✅ PR references an issue"
           else
