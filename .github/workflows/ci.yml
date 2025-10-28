@@ -150,6 +150,7 @@ jobs:
         run: |
           # Start container in background
           docker run -d --name test-container \
+            -p 8000:8000 \
             -e SUPABASE_URL=http://test \
             -e SUPABASE_KEY=test \
             -e GEMINI_API_KEY=test \
@@ -157,21 +158,36 @@ jobs:
             -e OPENROUTER_API_KEY=test \
             production-rag-system:latest
 
-          # Wait for health check
-          echo "Waiting for container to be healthy..."
-          for i in {1..30}; do
-            if docker inspect test-container | grep -q '"Health": "healthy"'; then
-              echo "✅ Container is healthy"
-              docker logs test-container
-              docker stop test-container
-              docker rm test-container
-              exit 0
+          # Wait for application to start
+          echo "Waiting for application to start..."
+          sleep 5
+
+          # Test health endpoint directly
+          echo "Testing health endpoint..."
+          for i in {1..20}; do
+            if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+              echo "✅ Health endpoint is responding"
+
+              # Verify container is still running
+              if docker ps | grep -q test-container; then
+                echo "✅ Container is running"
+                docker logs test-container | tail -20
+                docker stop test-container
+                docker rm test-container
+                exit 0
+              else
+                echo "❌ Container stopped unexpectedly"
+                docker logs test-container
+                docker rm test-container
+                exit 1
+              fi
             fi
-            echo "Attempt $i: Container not healthy yet, waiting..."
+            echo "Attempt $i: Health endpoint not ready yet, waiting..."
             sleep 2
           done
 
-          echo "❌ Container failed to become healthy"
+          echo "❌ Health endpoint failed to respond"
+          echo "Container logs:"
           docker logs test-container
           docker stop test-container
           docker rm test-container
