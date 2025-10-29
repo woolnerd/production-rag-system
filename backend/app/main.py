@@ -129,8 +129,9 @@ app.include_router(query.router, prefix="/api", tags=["Query"])
 
 # Mount static files (frontend)
 # Serve frontend at root path
-# Get the frontend directory path
-frontend_dir = Path(__file__).parent.parent.parent / "frontend"
+# Get the frontend directory path (relative to app/main.py)
+# In Docker: /app/app/main.py -> /app/frontend
+frontend_dir = Path(__file__).parent.parent / "frontend"
 
 # Only mount if frontend directory exists
 if frontend_dir.exists():
