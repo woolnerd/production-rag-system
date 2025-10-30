@@ -40,6 +40,16 @@ async def query(
     try:
         logger.info(f"Processing query: '{request.query[:50]}...'")
 
+        # Log conversation history for debugging
+        if request.conversation_history:
+            logger.info(
+                f"Conversation history: {len(request.conversation_history)} messages"
+            )
+            for idx, msg in enumerate(request.conversation_history):
+                logger.info(f"  [{idx}] {msg.role}: {msg.content[:80]}...")
+        else:
+            logger.info("No conversation history provided")
+
         # Initialize services
         hybrid_search = HybridSearchService(supabase_client=supabase)
         reranking_service = RerankingService()
