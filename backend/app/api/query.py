@@ -96,10 +96,20 @@ async def query(
 
         # Step 3: LLM answer generation
         logger.info("Generating answer with Claude...")
+
+        # Convert conversation history to dict format if provided
+        conversation_history = None
+        if request.conversation_history:
+            conversation_history = [
+                {"role": msg.role, "content": msg.content}
+                for msg in request.conversation_history
+            ]
+
         llm_response = llm_service.generate_answer_with_retry(
             query=request.query,
             search_results=reranked_results,
             max_retries=3,
+            conversation_history=conversation_history,
         )
 
         # Format sources for response
