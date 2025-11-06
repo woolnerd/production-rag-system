@@ -2,11 +2,10 @@
 
 from typing import Any
 
-from supabase import Client
-
 from app.core.config import settings
 from app.core.exceptions import DocumentProcessingError
 from app.core.logging import get_logger
+from app.services.database import DatabaseService
 from app.services.embeddings import EmbeddingService
 
 logger = get_logger(__name__)
@@ -17,19 +16,19 @@ class VectorSearchService:
 
     def __init__(
         self,
-        supabase_client: Client,
+        db: DatabaseService,
         embedding_service: EmbeddingService | None = None,
     ):
         """Initialize the vector search service.
 
         Args:
-            supabase_client: Supabase client for database operations
+            db: PostgreSQL database service
             embedding_service: Embedding service (creates new if None)
         """
-        self.supabase = supabase_client
+        self.db = db
         self.embedding_service = embedding_service or EmbeddingService()
 
-    def search(
+    async def search(
         self,
         query: str,
         top_k: int | None = None,
@@ -62,23 +61,18 @@ class VectorSearchService:
                 f"Generated query embedding with {len(query_embedding)} dimensions"
             )
 
-            # Perform vector similarity search using Supabase RPC
-            # Note: This assumes a PostgreSQL function 'search_chunks' exists
-            # that performs cosine similarity search using pgvector
-            result = self.supabase.rpc(
-                "search_chunks",
-                {
-                    "query_embedding": query_embedding,
-                    "match_count": top_k,
-                    "similarity_threshold": similarity_threshold,
-                },
-            ).execute()
+            # Perform vector similarity search using PostgreSQL function
+            results = await self.db.fetch(
+                "SELECT * FROM search_chunks($1::vector, $2, $3)",
+                query_embedding,
+                top_k,
+                similarity_threshold,
+            )
 
-            if not result.data:
+            if not results:
                 logger.info("No results found for query")
                 return []
 
-            results = result.data
             logger.info(f"Found {len(results)} results for query")
 
             # Format results
@@ -106,7 +100,7 @@ class VectorSearchService:
             logger.error(f"Vector search failed: {e}", exc_info=True)
             raise DocumentProcessingError(f"Vector search failed: {e}") from e
 
-    def search_by_document(
+    async def search_by_document(
         self,
         query: str,
         document_id: str,
@@ -141,21 +135,18 @@ class VectorSearchService:
             query_embedding = self.embedding_service.generate_query_embedding(query)
 
             # Perform vector similarity search filtered by document_id
-            result = self.supabase.rpc(
-                "search_chunks_by_document",
-                {
-                    "query_embedding": query_embedding,
-                    "target_document_id": document_id,
-                    "match_count": top_k,
-                    "similarity_threshold": similarity_threshold,
-                },
-            ).execute()
+            results = await self.db.fetch(
+                "SELECT * FROM search_chunks_by_document($1::vector, $2::uuid, $3, $4)",
+                query_embedding,
+                document_id,
+                top_k,
+                similarity_threshold,
+            )
 
-            if not result.data:
+            if not results:
                 logger.info(f"No results found in document {document_id}")
                 return []
 
-            results = result.data
             logger.info(f"Found {len(results)} results in document {document_id}")
 
             # Format results

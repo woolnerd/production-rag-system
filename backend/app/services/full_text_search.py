@@ -2,11 +2,10 @@
 
 from typing import Any
 
-from supabase import Client
-
 from app.core.config import settings
 from app.core.exceptions import DocumentProcessingError
 from app.core.logging import get_logger
+from app.services.database import DatabaseService
 
 logger = get_logger(__name__)
 
@@ -14,15 +13,15 @@ logger = get_logger(__name__)
 class FullTextSearchService:
     """Service for performing full-text keyword search on document chunks."""
 
-    def __init__(self, supabase_client: Client):
+    def __init__(self, db: DatabaseService):
         """Initialize the full-text search service.
 
         Args:
-            supabase_client: Supabase client for database operations
+            db: PostgreSQL database service
         """
-        self.supabase = supabase_client
+        self.db = db
 
-    def search(
+    async def search(
         self,
         query: str,
         limit: int | None = None,
@@ -47,22 +46,17 @@ class FullTextSearchService:
 
             logger.info(f"Full-text search for query: '{query[:50]}...'")
 
-            # Perform full-text search using Supabase RPC
-            # Note: This assumes a PostgreSQL function 'search_chunks_fulltext' exists
-            # that performs full-text search using tsvector and tsquery
-            result = self.supabase.rpc(
-                "search_chunks_fulltext",
-                {
-                    "search_query": query,
-                    "match_limit": limit,
-                },
-            ).execute()
+            # Perform full-text search using PostgreSQL function
+            results = await self.db.fetch(
+                "SELECT * FROM search_chunks_fulltext($1, $2)",
+                query,
+                limit,
+            )
 
-            if not result.data:
+            if not results:
                 logger.info("No results found for full-text query")
                 return []
 
-            results = result.data
             logger.info(f"Found {len(results)} results for full-text query")
 
             # Format results
@@ -90,7 +84,7 @@ class FullTextSearchService:
             logger.error(f"Full-text search failed: {e}", exc_info=True)
             raise DocumentProcessingError(f"Full-text search failed: {e}") from e
 
-    def search_by_document(
+    async def search_by_document(
         self,
         query: str,
         document_id: str,
@@ -120,20 +114,17 @@ class FullTextSearchService:
             )
 
             # Perform full-text search filtered by document_id
-            result = self.supabase.rpc(
-                "search_chunks_fulltext_by_document",
-                {
-                    "search_query": query,
-                    "target_document_id": document_id,
-                    "match_limit": limit,
-                },
-            ).execute()
+            results = await self.db.fetch(
+                "SELECT * FROM search_chunks_fulltext_by_document($1, $2::uuid, $3)",
+                query,
+                document_id,
+                limit,
+            )
 
-            if not result.data:
+            if not results:
                 logger.info(f"No full-text results found in document {document_id}")
                 return []
 
-            results = result.data
             logger.info(
                 f"Found {len(results)} full-text results in document {document_id}"
             )
