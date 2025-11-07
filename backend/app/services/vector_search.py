@@ -61,10 +61,13 @@ class VectorSearchService:
                 f"Generated query embedding with {len(query_embedding)} dimensions"
             )
 
+            # Convert embedding list to PostgreSQL vector format string
+            vector_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
+
             # Perform vector similarity search using PostgreSQL function
             results = await self.db.fetch(
                 "SELECT * FROM search_chunks($1::vector, $2, $3)",
-                query_embedding,
+                vector_str,
                 top_k,
                 similarity_threshold,
             )
@@ -134,10 +137,13 @@ class VectorSearchService:
             # Generate embedding for query
             query_embedding = self.embedding_service.generate_query_embedding(query)
 
+            # Convert embedding list to PostgreSQL vector format string
+            vector_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
+
             # Perform vector similarity search filtered by document_id
             results = await self.db.fetch(
                 "SELECT * FROM search_chunks_by_document($1::vector, $2::uuid, $3, $4)",
-                query_embedding,
+                vector_str,
                 document_id,
                 top_k,
                 similarity_threshold,
