@@ -1,5 +1,6 @@
 """Vector similarity search service using embeddings."""
 
+import json
 from typing import Any
 
 from app.core.config import settings
@@ -81,6 +82,14 @@ class VectorSearchService:
             # Format results
             formatted_results = []
             for idx, row in enumerate(results):
+                # Parse metadata from JSON string if needed
+                metadata = row.get("metadata", {})
+                if isinstance(metadata, str):
+                    try:
+                        metadata = json.loads(metadata)
+                    except json.JSONDecodeError:
+                        metadata = {}
+
                 formatted_results.append(
                     {
                         "chunk_id": row["id"],
@@ -91,7 +100,7 @@ class VectorSearchService:
                         ),
                         "similarity_score": float(row["similarity"]),
                         "rank": idx + 1,
-                        "metadata": row.get("metadata", {}),
+                        "metadata": metadata,
                     }
                 )
 
@@ -158,6 +167,14 @@ class VectorSearchService:
             # Format results
             formatted_results = []
             for idx, row in enumerate(results):
+                # Parse metadata from JSON string if needed
+                metadata = row.get("metadata", {})
+                if isinstance(metadata, str):
+                    try:
+                        metadata = json.loads(metadata)
+                    except json.JSONDecodeError:
+                        metadata = {}
+
                 formatted_results.append(
                     {
                         "chunk_id": row["id"],
@@ -168,7 +185,7 @@ class VectorSearchService:
                         ),
                         "similarity_score": float(row["similarity"]),
                         "rank": idx + 1,
-                        "metadata": row.get("metadata", {}),
+                        "metadata": metadata,
                     }
                 )
 
