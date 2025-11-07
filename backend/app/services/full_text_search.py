@@ -73,8 +73,8 @@ class FullTextSearchService:
 
                 formatted_results.append(
                     {
-                        "chunk_id": row["id"],
-                        "document_id": row["document_id"],
+                        "chunk_id": str(row["id"]),
+                        "document_id": str(row["document_id"]),
                         "content": row["content"],
                         "contextual_content": row.get(
                             "contextual_content", row["content"]
@@ -151,8 +151,8 @@ class FullTextSearchService:
 
                 formatted_results.append(
                     {
-                        "chunk_id": row["id"],
-                        "document_id": row["document_id"],
+                        "chunk_id": str(row["id"]),
+                        "document_id": str(row["document_id"]),
                         "content": row["content"],
                         "contextual_content": row.get(
                             "contextual_content", row["content"]
