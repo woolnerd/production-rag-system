@@ -402,12 +402,14 @@ def test_process_document_success(client_with_mock_db):
     # Mock DocumentProcessor
     with patch("app.api.documents.DocumentProcessor") as MockProcessor:
         mock_processor = MockProcessor.return_value
-        mock_processor.process_document.return_value = {
-            "text_length": 1000,
-            "num_chunks": 5,
-            "chunks_stored": 5,
-            "status": "completed",
-        }
+        mock_processor.process_document = AsyncMock(
+            return_value={
+                "text_length": 1000,
+                "num_chunks": 5,
+                "chunks_stored": 5,
+                "status": "completed",
+            }
+        )
 
         # Create test file
         test_content = b"%PDF-1.4 test content"
@@ -464,8 +466,8 @@ def test_process_document_processing_error(client_with_mock_db):
         from app.core.exceptions import DocumentProcessingError
 
         mock_processor = MockProcessor.return_value
-        mock_processor.process_document.side_effect = DocumentProcessingError(
-            "Failed to extract text"
+        mock_processor.process_document = AsyncMock(
+            side_effect=DocumentProcessingError("Failed to extract text")
         )
 
         test_content = b"%PDF-1.4 test content"
