@@ -57,10 +57,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
-          cd backend && pytest tests/ -v --tb=short
+          pytest tests/unit/ -v --tb=short
         continue-on-error: true  # Allow tests to fail initially during setup
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ -v -m integration --tb=short
+        continue-on-error: true
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -85,7 +90,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          cd backend && pytest tests/ --cov=app --cov-report=xml --cov-report=term --cov-fail-under=60
+          pytest tests/unit/ -m "not slow" --cov=backend/app --cov-report=xml --cov-report=term --cov-fail-under=80
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}

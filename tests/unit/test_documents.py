@@ -61,8 +61,9 @@ def test_upload_pdf_success(client_with_mock_db):
     # Create test PDF file
     test_content = b"%PDF-1.4 test content"
     files = {"file": create_test_file("test.pdf", test_content, "application/pdf")}
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 201
     data = response.json()
@@ -94,8 +95,9 @@ def test_upload_docx_success(client_with_mock_db):
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
     }
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 201
     data = response.json()
@@ -119,8 +121,9 @@ def test_upload_txt_success(client_with_mock_db):
 
     test_content = b"This is a test text file content."
     files = {"file": create_test_file("test.txt", test_content, "text/plain")}
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 201
     data = response.json()
@@ -137,8 +140,9 @@ def test_upload_invalid_file_type(client_with_mock_db):
     files = {
         "file": create_test_file("test.exe", test_content, "application/x-msdownload")
     }
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 400
     data = response.json()
@@ -153,8 +157,9 @@ def test_upload_file_too_large(client_with_mock_db):
     # Create 11MB file (exceeds 10MB limit)
     large_content = b"x" * (11 * 1024 * 1024)
     files = {"file": create_test_file("large.pdf", large_content, "application/pdf")}
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 400
     data = response.json()
@@ -180,8 +185,9 @@ def test_upload_database_error(client_with_mock_db):
 
     test_content = b"%PDF-1.4 test content"
     files = {"file": create_test_file("test.pdf", test_content, "application/pdf")}
+    data = {"session_id": "test-session-123"}
 
-    response = client.post("/api/documents/upload", files=files)
+    response = client.post("/api/documents/upload", files=files, data=data)
 
     assert response.status_code == 500
     data = response.json()
@@ -201,7 +207,9 @@ def test_get_document_success(client_with_mock_db):
         "metadata": {"file_size": 100},
     }
 
-    response = client.get(f"/api/documents/{mock_document_id}")
+    response = client.get(
+        f"/api/documents/{mock_document_id}?session_id=test-session-123"
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -217,7 +225,9 @@ def test_get_document_not_found(client_with_mock_db):
     mock_document_id = uuid4()
     mock_db.fetchrow.return_value = None
 
-    response = client.get(f"/api/documents/{mock_document_id}")
+    response = client.get(
+        f"/api/documents/{mock_document_id}?session_id=test-session-123"
+    )
 
     assert response.status_code == 404
     data = response.json()
@@ -261,7 +271,7 @@ def test_list_documents_success(client_with_mock_db):
         },
     ]
 
-    response = client.get("/api/documents")
+    response = client.get("/api/documents?session_id=test-session-123")
 
     assert response.status_code == 200
     data = response.json()
@@ -291,7 +301,7 @@ def test_list_documents_empty(client_with_mock_db):
     # Mock empty documents response
     mock_db.fetch.return_value = []
 
-    response = client.get("/api/documents")
+    response = client.get("/api/documents?session_id=test-session-123")
 
     assert response.status_code == 200
     data = response.json()
@@ -307,7 +317,7 @@ def test_list_documents_database_error(client_with_mock_db):
     # Mock database error
     mock_db.fetch.side_effect = Exception("Database error")
 
-    response = client.get("/api/documents")
+    response = client.get("/api/documents?session_id=test-session-123")
 
     assert response.status_code == 500
     data = response.json()
@@ -329,7 +339,9 @@ def test_delete_document_success(client_with_mock_db):
     # Mock successful delete
     mock_db.execute.return_value = None
 
-    response = client.delete(f"/api/documents/{mock_document_id}")
+    response = client.delete(
+        f"/api/documents/{mock_document_id}?session_id=test-session-123"
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -348,7 +360,9 @@ def test_delete_document_not_found(client_with_mock_db):
     # Mock document doesn't exist
     mock_db.fetchrow.return_value = None
 
-    response = client.delete(f"/api/documents/{mock_document_id}")
+    response = client.delete(
+        f"/api/documents/{mock_document_id}?session_id=test-session-123"
+    )
 
     assert response.status_code == 404
     data = response.json()
@@ -380,7 +394,9 @@ def test_delete_document_database_error(client_with_mock_db):
     # Mock delete fails
     mock_db.execute.side_effect = Exception("Delete failed")
 
-    response = client.delete(f"/api/documents/{mock_document_id}")
+    response = client.delete(
+        f"/api/documents/{mock_document_id}?session_id=test-session-123"
+    )
 
     assert response.status_code == 500
     data = response.json()
