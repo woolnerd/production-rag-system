@@ -437,16 +437,16 @@ function enableChat() {
     if (welcomeMessage) {
         welcomeMessage.innerHTML = `
             <h2>Ready to answer your questions!</h2>
-            <p style="margin-bottom: 1rem;">Try asking:</p>
+            <p style="margin-bottom: 1rem;">Try asking about your documents:</p>
             <div style="text-align: left; max-width: 500px; margin: 0 auto;">
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "What are the main topics across my documents?"
+                    💬 "What are the key points in [document name]?"
                 </p>
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "Summarize the key findings from the uploaded files"
+                    💬 "Summarize the main findings"
                 </p>
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "Compare what different documents say about [topic]"
+                    💬 "What does it say about [specific topic]?"
                 </p>
             </div>
         `;
