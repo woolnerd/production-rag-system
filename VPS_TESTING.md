@@ -23,8 +23,9 @@ git pull origin session-isolation
 ## Step 3: Apply Database Migrations
 
 ### Check Current State
+
 ```bash
-docker exec -it rag-demo-postgres-1 psql -U rag_user -d rag_chatbot -c "\d documents"
+docker exec -it n8n-test_postgres_1 psql -U rag_user -d rag_db -c "\d documents"
 ```
 
 Look for `session_id` column. If it doesn't exist, continue:
@@ -32,7 +33,7 @@ Look for `session_id` column. If it doesn't exist, continue:
 ### Apply Migration 004 (Add session_id column)
 
 ```bash
-docker exec -i rag-demo-postgres-1 psql -U rag_user -d rag_chatbot << 'EOF'
+docker exec -i n8n-test_postgres_1 psql -U rag_user -d rag_db << 'EOF'
 -- Migration 004: Add session isolation support
 ALTER TABLE documents
 ADD COLUMN session_id VARCHAR(255) NOT NULL DEFAULT 'global';
@@ -53,7 +54,7 @@ EOF
 ### Apply Migration 005 (Session-aware search functions)
 
 ```bash
-docker exec -i rag-demo-postgres-1 psql -U rag_user -d rag_chatbot << 'EOF'
+docker exec -i n8n-test_postgres_1 psql -U rag_user -d rag_db << 'EOF'
 -- Migration 005: Add session-aware search functions
 
 -- Vector search with session filtering
@@ -269,8 +270,9 @@ docker-compose -f docker-compose.prod.yml logs -f backend
 ### Test 5: Make Document Global
 
 **SSH into VPS:**
+
 ```bash
-docker exec -it rag-demo-postgres-1 psql -U rag_user -d rag_chatbot
+docker exec -it n8n-test_postgres_1 psql -U rag_user -d rag_db
 
 -- List all documents
 SELECT id, filename, session_id FROM documents ORDER BY upload_date DESC;
@@ -336,8 +338,9 @@ GROUP BY d.session_id;
 ## Cleanup After Testing
 
 **Remove test documents:**
+
 ```bash
-docker exec -it rag-demo-postgres-1 psql -U rag_user -d rag_chatbot << 'EOF'
+docker exec -it n8n-test_postgres_1 psql -U rag_user -d rag_db << 'EOF'
 DELETE FROM documents WHERE filename LIKE 'test-doc-%';
 EOF
 ```
@@ -359,12 +362,13 @@ docker-compose -f docker-compose.prod.yml logs backend
 ```
 
 **If migrations fail:**
+
 ```bash
 # Check if column already exists
-docker exec -it rag-demo-postgres-1 psql -U rag_user -d rag_chatbot -c "\d documents"
+docker exec -it n8n-test_postgres_1 psql -U rag_user -d rag_db -c "\d documents"
 
 # Check if functions exist
-docker exec -it rag-demo-postgres-1 psql -U rag_user -d rag_chatbot -c "\df *session*"
+docker exec -it n8n-test_postgres_1 psql -U rag_user -d rag_db -c "\df *session*"
 ```
 
 **If search returns no results:**
