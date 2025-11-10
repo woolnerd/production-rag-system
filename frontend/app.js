@@ -440,13 +440,13 @@ function enableChat() {
             <p style="margin-bottom: 1rem;">Try asking:</p>
             <div style="text-align: left; max-width: 500px; margin: 0 auto;">
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "What are the main topics covered in this document?"
+                    💬 "What are the main topics across my documents?"
                 </p>
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "Summarize the key findings"
+                    💬 "Summarize the key findings from the uploaded files"
                 </p>
                 <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
-                    💬 "What does it say about [specific topic]?"
+                    💬 "Compare what different documents say about [topic]"
                 </p>
             </div>
         `;
