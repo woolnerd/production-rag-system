@@ -283,7 +283,7 @@ async function deleteDocument(documentId) {
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/documents/${documentId}`,
+      `${API_BASE_URL}/api/documents/${documentId}?session_id=${state.sessionId}`,
       {
         method: "DELETE",
       }
