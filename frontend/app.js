@@ -432,10 +432,24 @@ function enableChat() {
     elements.queryInput.disabled = false;
     elements.sendButton.disabled = false;
 
-    // Clear welcome message if it exists
+    // Replace welcome message with example questions
     const welcomeMessage = elements.chatMessages.querySelector('.welcome-message');
     if (welcomeMessage) {
-        welcomeMessage.remove();
+        welcomeMessage.innerHTML = `
+            <h2>Ready to answer your questions!</h2>
+            <p style="margin-bottom: 1rem;">Try asking:</p>
+            <div style="text-align: left; max-width: 500px; margin: 0 auto;">
+                <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
+                    💬 "What are the main topics covered in this document?"
+                </p>
+                <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
+                    💬 "Summarize the key findings"
+                </p>
+                <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">
+                    💬 "What does it say about [specific topic]?"
+                </p>
+            </div>
+        `;
     }
 }
 
