@@ -99,13 +99,13 @@ If you're running the app in Docker (using `docker-compose.prod.yml`), use `dock
 crontab -e
 
 # Run daily at 2 AM (RECOMMENDED)
-0 2 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 2 * * * docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 6 hours
-0 */6 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */6 * * * docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 12 hours
-0 */12 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */12 * * * docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 ```
 
 **Important Notes:**
@@ -126,7 +126,7 @@ Add a cleanup service to `docker-compose.prod.yml`:
       sh -c "
         while true; do
           echo '🧹 Running cleanup...'
-          python /app/backend/scripts/cleanup_demo.py
+          python /app/scripts/cleanup_demo.py
           echo '💤 Sleeping for 6 hours...'
           sleep 21600
         done
@@ -151,13 +151,13 @@ For one-time cleanup or testing:
 
 ```bash
 # Run cleanup in Docker container
-docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py
+docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py
 
 # Dry run
-docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --dry-run
+docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py --dry-run
 
 # Custom threshold
-docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --hours 48
+docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py --hours 48
 ```
 
 #### Option 4: Non-Docker (venv) Setup
@@ -325,10 +325,10 @@ SELECT
 docker ps | grep rag-chatbot-prod
 
 # Check script exists in container
-docker exec rag-chatbot-prod ls -la /app/backend/scripts/cleanup_demo.py
+docker exec rag-chatbot-prod ls -la /app/scripts/cleanup_demo.py
 
 # Test script manually
-docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --dry-run
+docker exec rag-chatbot-prod python /app/scripts/cleanup_demo.py --dry-run
 
 # Check container logs for errors
 docker logs rag-chatbot-prod --tail 50
