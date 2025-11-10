@@ -90,27 +90,89 @@ Sessions affected: 8
 
 ### Automated Scheduling
 
-#### Option 1: Cron Job (Linux/Mac) - RECOMMENDED FOR VPS
+#### Option 1: Docker Exec with Cron (RECOMMENDED FOR DOCKERIZED VPS)
+
+If you're running the app in Docker (using `docker-compose.prod.yml`), use `docker exec` to run the script inside the container:
 
 ```bash
 # Edit crontab
 crontab -e
 
 # Run daily at 2 AM (RECOMMENDED)
-0 2 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 2 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 6 hours
-0 */6 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */6 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 12 hours
-0 */12 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */12 * * * docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 ```
 
 **Important Notes:**
-- Use **absolute paths** for both the project directory and venv python
-- Replace `/root/rag-demo` with your actual project path
-- The script needs venv python to access all dependencies
+- `rag-chatbot-prod` is the container name from `docker-compose.prod.yml`
+- Script runs inside the container with all dependencies available
+- Container must be running for cron to work
 - Make sure log directory exists: `sudo touch /var/log/rag-cleanup.log && sudo chmod 666 /var/log/rag-cleanup.log`
+
+#### Option 2: Separate Cleanup Container (Alternative)
+
+Add a cleanup service to `docker-compose.prod.yml`:
+
+```yaml
+  cleanup:
+    image: ${DOCKER_REGISTRY:-ghcr.io/woolnerd}/production-rag-system:${IMAGE_TAG:-latest}
+    container_name: rag-cleanup
+    command: >
+      sh -c "
+        while true; do
+          echo '🧹 Running cleanup...'
+          python /app/backend/scripts/cleanup_demo.py
+          echo '💤 Sleeping for 6 hours...'
+          sleep 21600
+        done
+      "
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    networks:
+      - rag-network
+    depends_on:
+      - app
+```
+
+Then restart Docker Compose:
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### Option 3: Manual Cleanup (Testing/Development)
+
+For one-time cleanup or testing:
+
+```bash
+# Run cleanup in Docker container
+docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py
+
+# Dry run
+docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --dry-run
+
+# Custom threshold
+docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --hours 48
+```
+
+#### Option 4: Non-Docker (venv) Setup
+
+If you're running directly on the VPS without Docker:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Run daily at 2 AM
+0 2 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+```
+
+**Note**: Replace `/root/rag-demo` with your actual project path
 
 #### Option 2: Systemd Timer (Linux)
 
@@ -255,6 +317,24 @@ SELECT
 ### Troubleshooting
 
 #### Script Won't Run
+
+**For Docker Setup:**
+
+```bash
+# Check container is running
+docker ps | grep rag-chatbot-prod
+
+# Check script exists in container
+docker exec rag-chatbot-prod ls -la /app/backend/scripts/cleanup_demo.py
+
+# Test script manually
+docker exec rag-chatbot-prod python /app/backend/scripts/cleanup_demo.py --dry-run
+
+# Check container logs for errors
+docker logs rag-chatbot-prod --tail 50
+```
+
+**For Non-Docker Setup:**
 
 ```bash
 # Check permissions
