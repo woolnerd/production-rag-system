@@ -18,28 +18,37 @@ Automated cleanup script that deletes old documents and associated data from the
 #### Basic Usage
 
 ```bash
-# From backend directory
+# From project root
+cd /path/to/rag-demo
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Run cleanup
 cd backend
 python scripts/cleanup_demo.py
+
+# Or run directly with venv python (without activating)
+/path/to/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py
 ```
 
 #### Command Line Options
 
 ```bash
 # Show help
-python scripts/cleanup_demo.py --help
+/path/to/venv/bin/python backend/scripts/cleanup_demo.py --help
 
 # Dry run (show what would be deleted without deleting)
-python scripts/cleanup_demo.py --dry-run
+/path/to/venv/bin/python backend/scripts/cleanup_demo.py --dry-run
 
 # Custom time threshold (delete older than 48 hours)
-python scripts/cleanup_demo.py --hours 48
+/path/to/venv/bin/python backend/scripts/cleanup_demo.py --hours 48
 
 # Include global documents in cleanup (dangerous!)
-python scripts/cleanup_demo.py --include-global
+/path/to/venv/bin/python backend/scripts/cleanup_demo.py --include-global
 
 # Combine options
-python scripts/cleanup_demo.py --hours 12 --dry-run
+/path/to/venv/bin/python backend/scripts/cleanup_demo.py --hours 12 --dry-run
 ```
 
 ### Options
@@ -81,23 +90,27 @@ Sessions affected: 8
 
 ### Automated Scheduling
 
-#### Option 1: Cron Job (Linux/Mac)
+#### Option 1: Cron Job (Linux/Mac) - RECOMMENDED FOR VPS
 
 ```bash
 # Edit crontab
 crontab -e
 
-# Run daily at 2 AM
-0 2 * * * cd /path/to/rag-demo/backend && /path/to/venv/bin/python scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+# Run daily at 2 AM (RECOMMENDED)
+0 2 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 6 hours
-0 */6 * * * cd /path/to/rag-demo/backend && /path/to/venv/bin/python scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */6 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 
 # Run every 12 hours
-0 */12 * * * cd /path/to/rag-demo/backend && /path/to/venv/bin/python scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
+0 */12 * * * cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py >> /var/log/rag-cleanup.log 2>&1
 ```
 
-**Important**: Use absolute paths in cron jobs!
+**Important Notes:**
+- Use **absolute paths** for both the project directory and venv python
+- Replace `/root/rag-demo` with your actual project path
+- The script needs venv python to access all dependencies
+- Make sure log directory exists: `sudo touch /var/log/rag-cleanup.log && sudo chmod 666 /var/log/rag-cleanup.log`
 
 #### Option 2: Systemd Timer (Linux)
 
@@ -110,13 +123,15 @@ After=network.target
 
 [Service]
 Type=oneshot
-User=your-user
-WorkingDirectory=/path/to/rag-demo/backend
-Environment="PATH=/path/to/venv/bin:/usr/bin:/bin"
-ExecStart=/path/to/venv/bin/python scripts/cleanup_demo.py
+User=root
+WorkingDirectory=/root/rag-demo
+Environment="PATH=/root/rag-demo/venv/bin:/usr/bin:/bin"
+ExecStart=/root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py
 StandardOutput=journal
 StandardError=journal
 ```
+
+**Note**: Replace `/root/rag-demo` with your actual project path and adjust `User=` if not running as root.
 
 Create `/etc/systemd/system/rag-cleanup.timer`:
 
@@ -245,12 +260,17 @@ SELECT
 # Check permissions
 chmod +x backend/scripts/cleanup_demo.py
 
-# Check Python path
-which python
-python --version
+# Check venv Python exists
+ls -la /root/rag-demo/venv/bin/python
 
-# Run with absolute path
-/path/to/venv/bin/python /path/to/backend/scripts/cleanup_demo.py
+# Test venv Python works
+/root/rag-demo/venv/bin/python --version
+
+# Check dependencies installed in venv
+/root/rag-demo/venv/bin/pip list | grep -i asyncpg
+
+# Run with absolute path and verbose output
+cd /root/rag-demo && /root/rag-demo/venv/bin/python backend/scripts/cleanup_demo.py --dry-run
 ```
 
 #### Database Connection Errors
