@@ -8,73 +8,56 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
             <h1>RAG Chatbot</h1>
             <p class="subtitle">Upload documents and ask questions</p>
+        </div>
+    </header>
 
-            <!-- Value Propositions -->
-            <div class="value-props">
-                <div class="value-prop">
-                    <svg class="value-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span>Get instant answers from your documents</span>
-                </div>
-                <div class="value-prop">
-                    <svg class="value-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Every answer includes source citations</span>
-                </div>
-                <div class="value-prop">
-                    <svg class="value-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
-                    <span>Maintains context across your conversation</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Upload Section -->
-        <section class="upload-section" id="uploadSection">
+    <div class="main-layout">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
             <!-- Demo Warning -->
             <div class="demo-warning">
-                ⚠️ <strong>Demo Mode:</strong> All documents are automatically deleted after 24 hours
+                ⚠️ <strong>Demo:</strong> Docs deleted in 24hrs
             </div>
 
-            <div class="upload-area" id="uploadArea">
-                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <p class="upload-text">
-                    <strong>Click to upload</strong> or drag and drop
-                </p>
-                <p class="upload-hint">PDF, DOCX, or TXT (max 10MB)</p>
-                <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden>
-            </div>
-
-            <!-- Upload Progress -->
-            <div class="upload-progress hidden" id="uploadProgress">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="upload-text">
+                        <strong>Click to upload</strong> or drag and drop
+                    </p>
+                    <p class="upload-hint">PDF, DOCX, or TXT (max 10MB)</p>
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden>
                 </div>
-                <p class="progress-text" id="progressText">Uploading...</p>
-            </div>
 
-            <!-- Upload Status -->
-            <div class="upload-status hidden" id="uploadStatus"></div>
+                <!-- Upload Progress -->
+                <div class="upload-progress hidden" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Uploading...</p>
+                </div>
 
-            <!-- Uploaded Documents -->
-            <div class="documents-list hidden" id="documentsList">
-                <h3>Uploaded Documents</h3>
-                <div id="documentsContainer"></div>
-            </div>
-        </section>
+                <!-- Upload Status -->
+                <div class="upload-status hidden" id="uploadStatus"></div>
 
-        <!-- Chat Section -->
-        <section class="chat-section">
+                <!-- Uploaded Documents -->
+                <div class="documents-list hidden" id="documentsList">
+                    <h3>Documents</h3>
+                    <div id="documentsContainer"></div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Main Chat Section -->
+        <main class="chat-section">
             <div class="chat-header">
                 <button id="newConversationButton" class="new-conversation-button hidden" title="Start a new conversation">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
