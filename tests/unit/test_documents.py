@@ -258,6 +258,7 @@ def test_list_documents_success(client_with_mock_db):
             "filename": "test1.pdf",
             "file_type": "pdf",
             "upload_date": datetime.now(UTC),
+            "session_id": "test-session-123",
             "metadata": {"file_size": 100},
             "chunk_count": 5,
         },
@@ -266,6 +267,7 @@ def test_list_documents_success(client_with_mock_db):
             "filename": "test2.txt",
             "file_type": "txt",
             "upload_date": datetime.now(UTC),
+            "session_id": "test-session-123",
             "metadata": {"file_size": 50},
             "chunk_count": 3,
         },
@@ -333,6 +335,7 @@ def test_delete_document_success(client_with_mock_db):
     # Mock document exists with chunk count
     mock_db.fetchrow.return_value = {
         "id": mock_document_id,
+        "session_id": "test-session-123",
         "chunk_count": 5,
     }
 
