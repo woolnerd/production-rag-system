@@ -19,3 +19,21 @@ COMMENT ON INDEX idx_documents_session_id IS 'Index for efficient session-based 
 -- SELECT session_id, COUNT(*) as doc_count
 -- FROM documents
 -- GROUP BY session_id;
+
+-- ==============================================================================
+-- MAKING DOCUMENTS GLOBAL (visible to all users)
+-- ==============================================================================
+-- To make a document visible to all users, set its session_id to 'global'
+-- This is useful for demo/sample documents that should be accessible to everyone
+
+-- Make a specific document global:
+-- UPDATE documents SET session_id = 'global' WHERE id = '<document-uuid>';
+
+-- Make a document global by filename:
+-- UPDATE documents SET session_id = 'global' WHERE filename = 'sample-document.pdf';
+
+-- Make all documents from a session global:
+-- UPDATE documents SET session_id = 'global' WHERE session_id = 'session_xxx';
+
+-- List all global documents:
+-- SELECT id, filename, upload_date FROM documents WHERE session_id = 'global';
